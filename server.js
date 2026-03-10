@@ -1,0 +1,55 @@
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import pool from './config/db.js';
+
+
+// Import routes
+import farmerRoutes from './routes/farmers.js';
+import animalRoutes from './routes/animals.js';
+import visitRoutes from './routes/visits.js';
+import diseaseRoutes from './routes/diseases.js';
+import userRoutes from './routes/users.js';
+import vaccinationRoutes from './routes/vaccinations.js';
+import feedingRoutes from './routes/feeding.js';
+
+import errorHandler from './middleware/errorHandler.js';
+
+dotenv.config();
+
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(cors());
+
+// Routes
+app.use('/api/farmers', farmerRoutes);
+ app.use('/api/animals', animalRoutes);
+app.use('/api/visits', visitRoutes);
+app.use('/api/diseases', diseaseRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/vaccinations', vaccinationRoutes)
+app.use('/api/feeding', feedingRoutes)
+// Connect farmers routes
+
+// Test connection
+app.get('/', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT current_database()');
+    res.send(`The current database is: ${result.rows[0].current_database}`);
+  } catch (err) {
+    console.error('Database connection error:', err);
+    res.status(500).send('Database connection error');
+  }
+});
+
+// Error handling middleware
+app.use(errorHandler);
+
+const port = process.env.PORT || 5001;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
+
+export default app;
