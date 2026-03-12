@@ -3,8 +3,6 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import pool from './config/db.js';
 
-
-// Import routes
 import farmerRoutes from './routes/farmers.js';
 import animalRoutes from './routes/animals.js';
 import visitRoutes from './routes/visits.js';
@@ -19,21 +17,23 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://predictor1.onrender.com" 
+  ],
+  credentials: true
+}));
 
-// Routes
 app.use('/api/farmers', farmerRoutes);
- app.use('/api/animals', animalRoutes);
+app.use('/api/animals', animalRoutes);
 app.use('/api/visits', visitRoutes);
 app.use('/api/diseases', diseaseRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/vaccinations', vaccinationRoutes)
-app.use('/api/feeding', feedingRoutes)
-// Connect farmers routes
+app.use('/api/vaccinations', vaccinationRoutes);
+app.use('/api/feeding', feedingRoutes);
 
-// Test connection
 app.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT current_database()');
@@ -44,7 +44,6 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Error handling middleware
 app.use(errorHandler);
 
 const port = process.env.PORT || 5001;
