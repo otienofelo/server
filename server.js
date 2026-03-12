@@ -21,11 +21,10 @@ app.use(express.json());
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "https://predictor1.onrender.com" 
+    "https://predictor2-jyjz.onrender.com"
   ],
   credentials: true
 }));
-
 app.use('/api/farmers', farmerRoutes);
 app.use('/api/animals', animalRoutes);
 app.use('/api/visits', visitRoutes);
