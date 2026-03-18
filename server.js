@@ -43,34 +43,7 @@ app.get('/', async (req, res) => {
     res.status(500).send('Database connection error');
   }
 });
-app.get('/seed-diseases', async (req, res) => {
-  try {
-    await pool.query(`
-      INSERT INTO diseases (user_id, name, species, symptoms, treatment, prevention, status) VALUES
-      ('system', 'Foot and Mouth Disease', 'cow', ARRAY['fever','lameness','blisters','drooling','loss of appetite'], 'Supportive care, antibiotics for secondary infections', 'Vaccination, restrict movement', 'approved'),
-      ('system', 'Mastitis', 'cow', ARRAY['swollen udder','pain','fever','reduced milk','clots in milk'], 'Antibiotics, anti-inflammatory drugs', 'Proper milking hygiene, teat dipping', 'approved'),
-      ('system', 'Bovine Respiratory Disease', 'cow', ARRAY['coughing','nasal discharge','fever','difficulty breathing','lethargy'], 'Antibiotics, anti-inflammatory drugs', 'Vaccination, reduce stress', 'approved'),
-      ('system', 'East Coast Fever', 'cow', ARRAY['fever','swollen lymph nodes','nasal discharge','difficulty breathing','loss of appetite'], 'Buparvaquone injection', 'Tick control, vaccination', 'approved'),
-      ('system', 'Lumpy Skin Disease', 'cow', ARRAY['fever','skin nodules','swollen lymph nodes','nasal discharge','lameness'], 'Supportive treatment, antibiotics', 'Vaccination, insect control', 'approved'),
-      ('system', 'Contagious Caprine Pleuropneumonia', 'goat', ARRAY['coughing','fever','difficulty breathing','nasal discharge','loss of appetite'], 'Antibiotics, supportive care', 'Vaccination, quarantine new animals', 'approved'),
-      ('system', 'Goat Pox', 'goat', ARRAY['fever','skin lesions','nasal discharge','loss of appetite','lethargy'], 'Supportive care, antiseptic on lesions', 'Vaccination', 'approved'),
-      ('system', 'Peste des Petits Ruminants', 'goat', ARRAY['fever','nasal discharge','diarrhea','mouth sores','coughing'], 'Supportive care, antibiotics for secondary infections', 'Vaccination', 'approved'),
-      ('system', 'Caseous Lymphadenitis', 'goat', ARRAY['swollen lymph nodes','weight loss','lethargy','abscess'], 'Surgical drainage, antibiotics', 'Vaccination, biosecurity', 'approved'),
-      ('system', 'Sheep Pox', 'sheep', ARRAY['fever','skin lesions','nasal discharge','loss of appetite','lethargy'], 'Supportive care, antiseptic treatment', 'Vaccination', 'approved'),
-      ('system', 'Ovine Pulmonary Adenocarcinoma', 'sheep', ARRAY['difficulty breathing','weight loss','nasal discharge','coughing','lethargy'], 'No treatment available', 'Cull infected animals, biosecurity', 'approved'),
-      ('system', 'Bluetongue', 'sheep', ARRAY['fever','swollen face','blue tongue','lameness','nasal discharge'], 'Supportive care, antibiotics', 'Vaccination, insect control', 'approved'),
-      ('system', 'Newcastle Disease', 'chicken', ARRAY['coughing','sneezing','nasal discharge','paralysis','twisting neck'], 'No specific treatment, supportive care', 'Vaccination', 'approved'),
-      ('system', 'Fowl Pox', 'chicken', ARRAY['skin lesions','mouth sores','nasal discharge','loss of appetite','lethargy'], 'Supportive care, antiseptic', 'Vaccination, insect control', 'approved'),
-      ('system', 'Infectious Bursal Disease', 'chicken', ARRAY['diarrhea','loss of appetite','depression','ruffled feathers','trembling'], 'Supportive care, vitamins', 'Vaccination', 'approved'),
-      ('system', 'Coccidiosis', 'chicken', ARRAY['diarrhea','blood in droppings','loss of appetite','lethargy','ruffled feathers'], 'Anticoccidial drugs', 'Clean dry housing, good sanitation', 'approved')
-    ON CONFLICT DO NOTHING
-    `);
-    res.json({ message: '✅ Diseases seeded successfully!' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: '❌ Error: ' + err.message });
-  }
-});
+
 app.use(errorHandler);
 
 const port = process.env.PORT || 5000;
