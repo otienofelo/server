@@ -48,7 +48,7 @@ app.get('/fix-all-tables', async (req, res) => {
     // Fix animals
     await pool.query(`DROP TABLE IF EXISTS vaccinations CASCADE`);
     await pool.query(`DROP TABLE IF EXISTS feeding_logs CASCADE`);
-    await pool.query(`DROP TABLE IF EXISTS visits CASCADE`);
+    await pool.query(`DROP TABLE IF EXISTS visits  CASCADE`);
     await pool.query(`DROP TABLE IF EXISTS animals CASCADE`);
     await pool.query(`
       CREATE TABLE animals (
