@@ -21,10 +21,11 @@ app.use(express.json());
 app.use(cors({
   origin: [
     "http://localhost:5173",
-     "https://frontend-iasp.onrender.com"
+    "https://frontend-iasp.onrender.com"
   ],
   credentials: true
 }));
+
 app.use('/api/farmers', farmerRoutes);
 app.use('/api/animals', animalRoutes);
 app.use('/api/visits', visitRoutes);
@@ -43,9 +44,31 @@ app.get('/', async (req, res) => {
   }
 });
 
+// TEMPORARY - remove after running once
+pp.get('/fix-farmers', async (req, res) => {
+  try {
+    await pool.query(`DROP TABLE IF EXISTS farmers CASCADE`);
+    await pool.query(`
+      CREATE TABLE farmers (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        phone VARCHAR(50),
+        village VARCHAR(255),
+        farm_size VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    res.json({ message: 'Farmers table recreated!' });
+  } catch (err) {
+    res.status(500).json({ message: ' ' + err.message });
+  }
+});
+
 app.use(errorHandler);
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
