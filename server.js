@@ -43,108 +43,34 @@ app.get('/', async (req, res) => {
     res.status(500).send('Database connection error');
   }
 });
-app.get('/fix-all-tables', async (req, res) => {
+app.get('/seed-diseases', async (req, res) => {
   try {
-    // Fix animals
-    await pool.query(`DROP TABLE IF EXISTS vaccinations CASCADE`);
-    await pool.query(`DROP TABLE IF EXISTS feeding_logs CASCADE`);
-    await pool.query(`DROP TABLE IF EXISTS visits  CASCADE`);
-    await pool.query(`DROP TABLE IF EXISTS animals CASCADE`);
     await pool.query(`
-      CREATE TABLE animals (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id VARCHAR(255) NOT NULL,
-        farmer_id UUID REFERENCES farmers(id) ON DELETE CASCADE,
-        tag VARCHAR(100) NOT NULL,
-        species VARCHAR(100),
-        breed VARCHAR(100),
-        age INTEGER,
-        status VARCHAR(50) DEFAULT 'healthy',
-        weight DECIMAL(10,2),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+      INSERT INTO diseases (user_id, name, species, symptoms, treatment, prevention, status) VALUES
+      ('system', 'Foot and Mouth Disease', 'cow', ARRAY['fever','lameness','blisters','drooling','loss of appetite'], 'Supportive care, antibiotics for secondary infections', 'Vaccination, restrict movement', 'approved'),
+      ('system', 'Mastitis', 'cow', ARRAY['swollen udder','pain','fever','reduced milk','clots in milk'], 'Antibiotics, anti-inflammatory drugs', 'Proper milking hygiene, teat dipping', 'approved'),
+      ('system', 'Bovine Respiratory Disease', 'cow', ARRAY['coughing','nasal discharge','fever','difficulty breathing','lethargy'], 'Antibiotics, anti-inflammatory drugs', 'Vaccination, reduce stress', 'approved'),
+      ('system', 'East Coast Fever', 'cow', ARRAY['fever','swollen lymph nodes','nasal discharge','difficulty breathing','loss of appetite'], 'Buparvaquone injection', 'Tick control, vaccination', 'approved'),
+      ('system', 'Lumpy Skin Disease', 'cow', ARRAY['fever','skin nodules','swollen lymph nodes','nasal discharge','lameness'], 'Supportive treatment, antibiotics', 'Vaccination, insect control', 'approved'),
+      ('system', 'Contagious Caprine Pleuropneumonia', 'goat', ARRAY['coughing','fever','difficulty breathing','nasal discharge','loss of appetite'], 'Antibiotics, supportive care', 'Vaccination, quarantine new animals', 'approved'),
+      ('system', 'Goat Pox', 'goat', ARRAY['fever','skin lesions','nasal discharge','loss of appetite','lethargy'], 'Supportive care, antiseptic on lesions', 'Vaccination', 'approved'),
+      ('system', 'Peste des Petits Ruminants', 'goat', ARRAY['fever','nasal discharge','diarrhea','mouth sores','coughing'], 'Supportive care, antibiotics for secondary infections', 'Vaccination', 'approved'),
+      ('system', 'Caseous Lymphadenitis', 'goat', ARRAY['swollen lymph nodes','weight loss','lethargy','abscess'], 'Surgical drainage, antibiotics', 'Vaccination, biosecurity', 'approved'),
+      ('system', 'Sheep Pox', 'sheep', ARRAY['fever','skin lesions','nasal discharge','loss of appetite','lethargy'], 'Supportive care, antiseptic treatment', 'Vaccination', 'approved'),
+      ('system', 'Ovine Pulmonary Adenocarcinoma', 'sheep', ARRAY['difficulty breathing','weight loss','nasal discharge','coughing','lethargy'], 'No treatment available', 'Cull infected animals, biosecurity', 'approved'),
+      ('system', 'Bluetongue', 'sheep', ARRAY['fever','swollen face','blue tongue','lameness','nasal discharge'], 'Supportive care, antibiotics', 'Vaccination, insect control', 'approved'),
+      ('system', 'Newcastle Disease', 'chicken', ARRAY['coughing','sneezing','nasal discharge','paralysis','twisting neck'], 'No specific treatment, supportive care', 'Vaccination', 'approved'),
+      ('system', 'Fowl Pox', 'chicken', ARRAY['skin lesions','mouth sores','nasal discharge','loss of appetite','lethargy'], 'Supportive care, antiseptic', 'Vaccination, insect control', 'approved'),
+      ('system', 'Infectious Bursal Disease', 'chicken', ARRAY['diarrhea','loss of appetite','depression','ruffled feathers','trembling'], 'Supportive care, vitamins', 'Vaccination', 'approved'),
+      ('system', 'Coccidiosis', 'chicken', ARRAY['diarrhea','blood in droppings','loss of appetite','lethargy','ruffled feathers'], 'Anticoccidial drugs', 'Clean dry housing, good sanitation', 'approved')
+    ON CONFLICT DO NOTHING
     `);
-
-    // Fix diseases
-    await pool.query(`DROP TABLE IF EXISTS diseases CASCADE`);
-    await pool.query(`
-      CREATE TABLE diseases (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id VARCHAR(255) NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        species VARCHAR(100),
-        description TEXT,
-        symptoms TEXT[],
-        treatment TEXT,
-        prevention TEXT,
-        status VARCHAR(50) DEFAULT 'approved',
-        submitted_by VARCHAR(255),
-        reviewed_by VARCHAR(255),
-        review_note TEXT,
-        reviewed_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Recreate visits
-    await pool.query(`
-      CREATE TABLE visits (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id VARCHAR(255) NOT NULL,
-        animal_id UUID REFERENCES animals(id) ON DELETE CASCADE,
-        visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        symptoms TEXT,
-        diseases JSONB,
-        treatment TEXT,
-        notes TEXT,
-        animal_tag VARCHAR(100),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Recreate vaccinations
-    await pool.query(`
-      CREATE TABLE vaccinations (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id VARCHAR(255) NOT NULL,
-        animal_id UUID REFERENCES animals(id) ON DELETE CASCADE,
-        vaccine_name VARCHAR(255) NOT NULL,
-        date_administered DATE NOT NULL,
-        next_due_date DATE,
-        vet_responsible VARCHAR(255),
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Recreate feeding_logs
-    await pool.query(`
-      CREATE TABLE feeding_logs (
-        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-        user_id VARCHAR(255) NOT NULL,
-        animal_id UUID REFERENCES animals(id) ON DELETE CASCADE,
-        feed_type VARCHAR(255) NOT NULL,
-        quantity DECIMAL(10,2) NOT NULL,
-        unit VARCHAR(50) DEFAULT 'kg',
-        feeding_time TIMESTAMP NOT NULL,
-        cost DECIMAL(10,2) DEFAULT 0,
-        notes TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    res.json({ message: '✅ All tables fixed!' });
+    res.json({ message: '✅ Diseases seeded successfully!' });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: ' ' + err.message });
+    res.status(500).json({ message: '❌ Error: ' + err.message });
   }
 });
-
 app.use(errorHandler);
 
 const port = process.env.PORT || 5000;
