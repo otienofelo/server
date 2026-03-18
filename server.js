@@ -45,7 +45,7 @@ app.get('/', async (req, res) => {
 });
 
 // TEMPORARY - remove after running once
-pp.get('/fix-farmers', async (req, res) => {
+app.get('/fix-farmers', async (req, res) => {
   try {
     await pool.query(`DROP TABLE IF EXISTS farmers CASCADE`);
     await pool.query(`
