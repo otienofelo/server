@@ -43,7 +43,29 @@ app.get('/', async (req, res) => {
     res.status(500).send('Database connection error');
   }
 });
-
+app.get('/fix-visits', async (req, res) => {
+  try {
+    await pool.query(`DROP TABLE IF EXISTS visits CASCADE`);
+    await pool.query(`
+      CREATE TABLE visits (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id VARCHAR(255) NOT NULL,
+        animal_id UUID REFERENCES animals(id) ON DELETE CASCADE,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        symptoms TEXT[],
+        diseases JSONB,
+        notes TEXT,
+        animal_tag VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    res.json({ message: '✅ Visits table fixed!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: '❌ ' + err.message });
+  }
+});
 app.use(errorHandler);
 
 const port = process.env.PORT || 5000;
